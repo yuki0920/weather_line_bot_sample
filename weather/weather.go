@@ -1,4 +1,4 @@
-package main
+package weather
 
 import (
 	"encoding/json"
@@ -13,11 +13,6 @@ type Weather struct {
 	Area     string `json:"targetArea"`
 	HeadLine string `json:"headlineText"`
 	Body     string `json:"text"`
-}
-
-func main() {
-	result := GetWeather()
-	fmt.Println(result)
 }
 
 func GetWeather() string {
