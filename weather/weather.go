@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -15,36 +14,52 @@ type Weather struct {
 	Body     string `json:"text"`
 }
 
-func GetWeather() string {
-	jsonStr := httpGetStr("https://www.jma.go.jp/bosai/forecast/data/overview_forecast/130000.json")
-	weather := formatWeather(jsonStr)
+func GetWeather() (str string, err error) {
+	body, err := httpGetBody("https://www.jma.go.jp/bosai/forecast/data/overview_forecast/130000.json")
+	if err != nil {
+		// エラーを呼び出し元へ委譲する
+		return str, err
+	}
+	weather, err := formatWeather(body)
+	if err != nil {
+		// エラーを呼び出し元へ委譲する
+		return str, err
+	}
+
 	result := weather.ToS()
 
-	return result
+	return result, nil
 }
 
-func httpGetStr(url string) string {
+func httpGetBody(url string) ([]byte, error) {
 	// HTTPリクエストを発行しレスポンスを取得する
 	response, err := http.Get(url)
 	if err != nil {
-		log.Fatal("Get Http Error:", err)
+		// エラーをラップして返す
+		err = fmt.Errorf("Get Http Error: %s", err)
+		return nil, err
 	}
 	// レスポンスボディを読み込む
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal("IO Read Error:", err)
+		// エラーをラップして返す
+		err = fmt.Errorf("IO Read Error:: %s", err)
+		return nil, err
 	}
 	// 読み込み終わったらレスポンスボディを閉じる
 	defer response.Body.Close()
-	return string(body)
+
+	return body, nil
 }
 
-func formatWeather(str string) *Weather {
+func formatWeather(body []byte) (*Weather, error) {
 	weather := new(Weather)
-	if err := json.Unmarshal([]byte(str), weather); err != nil {
-		log.Fatal("JSON Unmarshal error:", err)
+	if err := json.Unmarshal(body, weather); err != nil {
+		// エラーをラップして返す
+		err = fmt.Errorf("JSON Unmarshal error: %s", err)
+		return nil, err
 	}
-	return weather
+	return weather, nil
 }
 
 func (w *Weather) ToS() string {
