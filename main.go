@@ -20,7 +20,11 @@ func main() {
 		log.Fatal(err)
 	}
 	// weatherパッケージパッケージから天気情報の文字列をを取得する
-	result := weather.GetWeather()
+	result, err := weather.GetWeather()
+	// エラーに値があればログに出力し終了する
+	if err != nil {
+		log.Fatal(err)
+	}
 	// テキストメッセージを生成する
 	message := linebot.NewTextMessage(result)
 	// テキストメッセージを友達登録しているユーザー全員に配信する
