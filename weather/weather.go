@@ -16,14 +16,14 @@ type Weather struct {
 }
 
 func GetWeather() string {
-	jsonStr := httpGetStr("https://www.jma.go.jp/bosai/forecast/data/overview_forecast/130000.json")
-	weather := formatWeather(jsonStr)
+	body := httpGetBody("https://www.jma.go.jp/bosai/forecast/data/overview_forecast/130000.json")
+	weather := formatWeather(body)
 	result := weather.ToS()
 
 	return result
 }
 
-func httpGetStr(url string) string {
+func httpGetBody(url string) []byte {
 	// HTTPリクエストを発行しレスポンスを取得する
 	response, err := http.Get(url)
 	if err != nil {
@@ -36,12 +36,13 @@ func httpGetStr(url string) string {
 	}
 	// 読み込み終わったらレスポンスボディを閉じる
 	defer response.Body.Close()
-	return string(body)
+
+	return body
 }
 
-func formatWeather(str string) *Weather {
+func formatWeather(body []byte) *Weather {
 	weather := new(Weather)
-	if err := json.Unmarshal([]byte(str), weather); err != nil {
+	if err := json.Unmarshal(body, weather); err != nil {
 		log.Fatal("JSON Unmarshal error:", err)
 	}
 	return weather
